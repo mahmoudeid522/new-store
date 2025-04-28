@@ -1,0 +1,22 @@
+    <!-- JavaScript Section -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Existing JS Code (Admin, Try-On, Scroll, etc.) ---
+            // ... (كل كود الجافاسكربت السابق يبقى هنا) ...
+
+
+            // --- PWA Service Worker Registration ---
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js') // تأكد من أن المسار صحيح
+                    .then(registration => {
+                        console.log('Service Worker registered successfully with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            } else {
+                console.log('Service Workers are not supported in this browser.');
+            }
+
+        }); // نهاية مستمع حدث DOMContentLoaded
+    </script>
