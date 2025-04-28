@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر الأناقة للملابس (مع تجربة افتراضية)</title>
+    <style>
+        /* --- Global Styles & Reset (Existing styles...) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; line-height: 1.6; color: #333; background-color: #f8f8f8; direction: rtl; overflow-x: hidden; /* منع التمرير الأفقي */ }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        img { max-width: 100%; height: auto; display: block; }
+
+        /* --- Header & Navigation (Existing styles...) --- */
+        header { background-color: #ffffff; padding: 15px 0; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 1000; }
+        header .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .logo { font-size: 1.8em; font-weight: 700; color: #5a3e8d; margin-bottom: 10px; }
+        nav ul { display: flex; flex-wrap: wrap; }
+        nav ul li { margin-right: 25px; margin-bottom: 10px; }
+        nav ul li:last-child { margin-right: 0; }
+        nav ul li a { font-weight: 600; color: #555; transition: color 0.3s ease; }
+        nav ul li a:hover, nav ul li a.active { color: #5a3e8d; }
+
+        /* --- Hero Section (Existing styles...) --- */
+        .hero { background: linear-gradient(rgba(90, 62, 141, 0.7), rgba(90, 62, 141, 0.7)), url('https://via.placeholder.com/1500x600/cccccc/969696?text=Fashion+Banner') no-repeat center center/cover; color: #fff; text-align: center; padding: 80px 20px; margin-bottom: 40px; }
+        .hero h1 { font-size: 2.8em; margin-bottom: 15px; font-weight: 700; }
+        .hero p { font-size: 1.1em; margin-bottom: 30px; }
+        .hero .btn { background-color: #ffffff; color: #5a3e8d; padding: 12px 30px; border: none; border-radius: 5px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; }
+        .hero .btn:hover { background-color: #f0f0f0; }
+
+        /* --- Product Sections (Existing styles...) --- */
+        .products-section { padding: 40px 0; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; }
+        .products-section h2 { font-size: 2.2em; color: #333; position: relative; padding-bottom: 10px; margin-bottom: 10px; }
+        .products-section h2::after { content: ''; position: absolute; bottom: 0; right: 0; width: 80px; height: 4px; background-color: #5a3e8d; border-radius: 2px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+        .product-card { position: relative; background-color: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; text-align: center; padding: 15px; /* Add padding for buttons */ display: flex; flex-direction: column; justify-content: space-between; /* لتوزيع المساحة */ }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12); }
+        .product-card img { width: 100%; height: 280px; /* Adjust height if needed */ object-fit: cover; margin-bottom: 15px; cursor: default; }
+        .product-card h3 { font-size: 1.1em; margin-bottom: 8px; color: #444; padding: 0 5px; min-height: 40px; cursor: default; flex-grow: 1; /* السماح للعنوان بالتمدد */}
+        .product-card .price { font-size: 1.2em; font-weight: 700; color: #5a3e8d; margin-bottom: 15px; cursor: default; }
+        .product-card .product-actions { display: flex; flex-direction: column; gap: 8px; /* مسافة بين الأزرار */ margin-top: auto; /* دفع الأزرار للأسفل */ }
+        .product-card .action-btn { /* Unified style */ background-color: #5a3e8d; color: #fff; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; transition: background-color 0.3s ease; font-size: 0.9em; width: 100%; }
+        .product-card .add-to-cart-btn:hover { background-color: #483273; }
+        .product-card .try-on-btn { background-color: #ff9800; /* لون برتقالي مميز */ }
+        .product-card .try-on-btn:hover { background-color: #e68a00; }
+
+        /* --- Admin Controls (Existing styles...) --- */
+        .admin-controls { display: none; position: absolute; top: 5px; left: 5px; background: rgba(255, 255, 255, 0.8); padding: 5px; border-radius: 4px; z-index: 5; /* Ensure it's above image but below modal */ }
+        .admin-controls button { background: #ffc107; color: #333; border: none; padding: 3px 8px; margin-left: 5px; cursor: pointer; font-size: 0.8em; border-radius: 3px; }
+        .admin-controls button.delete-btn { background: #dc3545; color: white; }
+        .admin-controls button.save-btn { background: #28a745; color: white; display: none; }
+        .admin-controls button.cancel-btn { background: #6c757d; color: white; display: none; }
+        .product-card h3[contenteditable="true"], .product-card .price[contenteditable="true"], .product-card img.editable-img { outline: 2px dashed #ffc107; background-color: #fffacd; cursor: text; }
+        .product-card img.editable-img { cursor: pointer; }
+        .add-product-btn { background-color: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600; display: none; }
+        body.admin-mode .admin-controls, body.admin-mode .add-product-btn { display: inline-block; }
+
+        /* --- Add Product Form (Existing styles...) --- */
+        #add-product-form-container { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1001; width: 90%; max-width: 400px; }
+        #add-product-form-container h3 { margin-bottom: 20px; text-align: center; }
+        #add-product-form label { display: block; margin-bottom: 5px; font-weight: 600; }
+        #add-product-form input, #add-product-form select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        #add-product-form button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        #add-product-form button[type="submit"] { background-color: #28a745; color: white; }
+        #add-product-form button[type="button"] { background-color: #6c757d; color: white; }
+        #form-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+
+        /* --- Virtual Fitting Room Widget --- */
+        #widget-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1050; }
+        #fitting-room-widget {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px; /* Adjust as needed */
+            max-height: 90vh; /* Limit height */
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1051;
+            padding: 20px;
+            overflow-y: auto; /* Allow scrolling if content overflows */
+        }
+        #fitting-room-widget h4 { margin-bottom: 15px; text-align: center; color: #5a3e8d; }
+        #widget-close-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* Left for RTL close button */
+            background: #eee;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2em;
+            line-height: 30px;
+            text-align: center;
+            cursor: pointer;
+            color: #555;
+        }
+        #widget-user-area {
+            position: relative; /* Container for absolute positioning of overlay */
+            width: 100%;
+            min-height: 300px; /* Minimum height */
+            border: 1px dashed #ccc;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+            overflow: hidden; /* Important to contain overlay */
+        }
+        #widget-user-photo {
+            display: block;
+            max-width: 100%;
+            max-height: 70vh; /* Limit image height within viewport */
+            object-fit: contain; /* Show the whole image */
+        }
+        #widget-clothing-overlay {
+            display: none; /* Hidden until user image is loaded */
+            position: absolute;
+            top: 20px; /* Initial position */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px; /* Initial size, adjust as needed */
+            height: auto;
+            cursor: move; /* Indicate draggable */
+            z-index: 10; /* Above user photo */
+            opacity: 0.85; /* Slight transparency */
+            user-select: none; /* Prevent text selection during drag */
+            -webkit-user-drag: none; /* Prevent default image drag */
+        }
+        #widget-controls { text-align: center; }
+        #widget-controls label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #5a3e8d;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        #widget-controls label:hover { background-color: #483273; }
+        #widget-user-photo-upload { display: none; /* Hide the actual file input */ }
+        #widget-instructions { font-size: 0.9em; color: #777; text-align: center; margin-top: 5px; }
+
+
+        /* --- Footer (Existing styles...) --- */
+        footer { background-color: #333; color: #f4f4f4; text-align: center; padding: 30px 0; margin-top: 50px; }
+        footer p { font-size: 0.9em; }
+        footer button { padding: 2px 5px; font-size: 0.8em; margin: 0 5px; }
+
+        /* --- Responsive Design (Additions for Widget) --- */
+         @media (max-width: 768px) {
+            /* Existing responsive styles... */
+            .product-card img { height: 250px; }
+             #fitting-room-widget { width: 95%; padding: 15px; }
+             #widget-user-area { min-height: 250px; }
+             #widget-clothing-overlay { width: 80px; /* Smaller initial size */ }
+         }
+         @media (max-width: 480px) {
+            /* Existing responsive styles... */
+            .product-card img { height: 200px; }
+            .product-card .action-btn { font-size: 0.85em; padding: 8px 10px; }
+             #fitting-room-widget { padding: 10px; }
+             #widget-user-area { min-height: 200px; }
+             #widget-clothing-overlay { width: 60px; }
+             #widget-controls label { padding: 8px 15px; }
+         }
+
+    </style>
+</head>
+<body>
+
+    <!-- Overlays -->
+    <div id="form-overlay"></div> <!-- For Add Product Form -->
+    <div id="widget-overlay"></div> <!-- For Fitting Room Widget -->
+
+    <!-- Add Product Form Container (Existing HTML...) -->
+    <div id="add-product-form-container">
+        <h3>إضافة منتج جديد</h3>
+        <form id="add-product-form">
+            <label for="product-name">اسم المنتج:</label><input type="text" id="product-name" required>
+            <label for="product-price">السعر (بالريال):</label><input type="number" id="product-price" required>
+            <label for="product-image">رابط الصورة:</label><input type="url" id="product-image" placeholder="https://example.com/image.jpg" required>
+             <!-- Add input for Try-On Image URL -->
+             <label for="product-tryon-image">رابط صورة التجربة (PNG شفاف أفضل):</label>
+             <input type="url" id="product-tryon-image" placeholder="https://example.com/tryon.png">
+
+            <label for="product-category">القسم:</label>
+            <select id="product-category" required>
+                <option value="men">رجال</option><option value="women">نساء</option><option value="kids">أطفال</option>
+            </select>
+            <button type="submit">إضافة المنتج</button><button type="button" id="cancel-add-product">إلغاء</button>
+        </form>
+    </div>
+
+    <!-- Virtual Fitting Room Widget -->
+    <div id="fitting-room-widget">
+        <button id="widget-close-btn">&times;</button>
+        <h4>تجربة قياس افتراضية (عرض توضيحي)</h4>
+        <div id="widget-user-area">
+            <img id="widget-user-photo" src="" alt="صورة المستخدم">
+            <img id="widget-clothing-overlay" src="" alt="الملابس">
+        </div>
+        <div id="widget-controls">
+             <label for="widget-user-photo-upload">1. حمّل صورتك الشخصية</label>
+             <input type="file" id="widget-user-photo-upload" accept="image/*">
+             <p id="widget-instructions">2. بعد تحميل الصورة، اسحب قطعة الملابس لوضعها على الصورة.</p>
+        </div>
+    </div>
+
+    <!-- Header Section (Existing HTML...) -->
+    <header>
+        <div class="container">
+            <div class="logo">متجر الأناقة</div>
+            <nav>
+                <ul>
+                    <li><a href="#home" class="active">الرئيسية</a></li><li><a href="#men">رجال</a></li><li><a href="#women">نساء</a></li><li><a href="#kids">أطفال</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Hero Section (Existing HTML...) -->
+        <section class="hero" id="home">
+             <div class="container">
+                 <h1>أحدث تشكيلات الموضة</h1>
+                 <p>اكتشف أسلوبك الفريد مع مجموعتنا الواسعة من الملابس العصرية</p>
+                 <a href="#men" class="btn">تسوق الآن</a>
+             </div>
+        </section>
+
+        <!-- Men's Clothing Section -->
+        <section class="products-section" id="men">
+            <div class="container">
+                <div class="section-header">
+                    <h2>ملابس رجالية</h2>
+                    <button class="add-product-btn" data-section="men">إضافة منتج +</button>
+                </div>
+                <div class="product-grid">
+                    <!-- Product Card 1 -->
+                    <div class="product-card" data-id="men-1">
+                        <div class="admin-controls"><button class="edit-btn">تعديل</button><button class="delete-btn">حذف</button><button class="save-btn">حفظ</button><button class="cancel-btn">إلغاء</button></div>
+                        <img src="https://via.placeholder.com/300x280/E8117F/ffffff?text=Men+Shirt" alt="قميص رجالي">
+                        <h3>قميص كاجوال أنيق</h3>
+                        <p class="price">150 ريال</p>
+                        <div class="product-actions">
+                            <button class="add-to-cart-btn action-btn" data-product="قميص كاجوال أنيق">أضف إلى السلة</button>
+                            <button class="try-on-btn action-btn" data-tryon-src="https://via.placeholder.com/150x200/E8117F/ffffff?text=Shirt+TryOn&bg=FFFFFF00">تجربة افتراضية</button> <!-- Placeholder Try-On PNG -->
+                        </div>
+                    </div>
+                    <!-- Product Card 2 -->
+                    <div class="product-card" data-id="men-2">
+                         <div class="admin-controls"><button class="edit-btn">تعديل</button><button class="delete-btn">حذف</button><button class="save-btn">حفظ</button><button class="cancel-btn">إلغاء</button></div>
+                        <img src="https://via.placeholder.com/300x280/3498DB/ffffff?text=Men+Jeans" alt="بنطلون جينز رجالي">
+                        <h3>بنطلون جينز مريح</h3>
+                        <p class="price">220 ريال</p>
+                         <div class="product-actions">
+                            <button class="add-to-cart-btn action-btn" data-product="بنطلون جينز مريح">أضف إلى السلة</button>
+                            <button class="try-on-btn action-btn" data-tryon-src="https://via.placeholder.com/150x250/3498DB/ffffff?text=Jeans+TryOn&bg=FFFFFF00">تجربة افتراضية</button>
+                         </div>
+                    </div>
+                     <!-- Product Card 3 -->
+                    <div class="product-card" data-id="men-3">
+                         <div class="admin-controls"><button class="edit-btn">تعديل</button><button class="delete-btn">حذف</button><button class="save-btn">حفظ</button><button class="cancel-btn">إلغاء</button></div>
+                        <img src="https://via.placeholder.com/300x280/2ECC71/ffffff?text=Men+T-Shirt" alt="تي شيرت رجالي">
+                        <h3>تي شيرت قطني أساسي</h3>
+                        <p class="price">80 ريال</p>
+                         <div class="product-actions">
+                            <button class="add-to-cart-btn action-btn" data-product="تي شيرت قطني أساسي">أضف إلى السلة</button>
+                            <button class="try-on-btn action-btn" data-tryon-src="https://via.placeholder.com/150x180/2ECC71/ffffff?text=T-Shirt+TryOn&bg=FFFFFF00">تجربة افتراضية</button>
+                         </div>
+                    </div>
+                    <!-- Product Card 4 -->
+                    <div class="product-card" data-id="men-4">
+                         <div class="admin-controls"><button class="edit-btn">تعديل</button><button class="delete-btn">حذف</button><button class="save-btn">حفظ</button><button class="cancel-btn">إلغاء</button></div>
+                        <img src="https://via.placeholder.com/300x280/F1C40F/ffffff?text=Men+Jacket" alt="جاكيت رجالي">
+                        <h3>جاكيت خفيف الوزن</h3>
+                        <p class="price">350 ريال</p>
+                         <div class="product-actions">
+                            <button class="add-to-cart-btn action-btn" data-product="جاكيت خفيف الوزن">أضف إلى السلة</button>
+                            <button class="try-on-btn action-btn" data-tryon-src="https://via.placeholder.com/200x220/F1C40F/ffffff?text=Jacket+TryOn&bg=FFFFFF00">تجربة افتراضية</button>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Women's Clothing Section (Add try-on buttons similarly) -->
+        <section class="products-section" id="women">
+             <div class="container">
+                 <div class="section-header"><h2>ملابس نسائية</h2><button class="add-product-btn" data-section="women">إضافة منتج +</button></div>
+                 <div class="product-grid">
+                    <!-- Example Women's Card -->
+                     <div class="product-card" data-id="women-1">
+                        <div class="admin-controls"><button class="edit-btn">تعديل</button><button class="delete-btn">حذف</button><button class="save-btn">حفظ</button><button class="cancel-btn">إلغاء</button></div>
+                        <img src="https://via.placeholder.com/300x280/9B59B6/ffffff?text=Women+Dress" alt="فستان نسائي">
+                        <h3>فستان صيفي مورد</h3>
+                        <p class="price">280 ريال</p>
+                         <div class="product-actions">
+                            <button class="add-to-cart-btn action-btn" data-product="فستان صيفي مورد">أضف إلى السلة</button>
+                            <button class="try-on-btn action-btn" data-tryon-src="https://via.placeholder.com/180x280/9B59B6/ffffff?text=Dress+TryOn&bg=FFFFFF00">تجربة افتراضية</button>
+                         </div>
+                     </div>
+                     <!-- Add other women's products with try-on buttons -->
+                 </div>
+            </div>
+        </section>
+
+        <!-- Kids' Clothing Section (Add try-on buttons similarly) -->
+        <section class="products-section" id="kids">
+             <div class="container">
+                 <div class="section-header"><h2>ملابس أطفال</h2><button class="add-product-btn" data-section="kids">إضافة منتج +</button></div>
+                 <div class="product-grid">
+                     <!-- Example Kids' Card -->
+                     <div class="product-card" data-id="kids-1">
+                        <div class="admin-controls"><button class="edit-btn">تعديل</button><button class="delete-btn">حذف</button><button class="save-btn">حفظ</button><button class="cancel-btn">إلغاء</button></div>
+                        <img src="https://via.placeholder.com/300x280/34495E/ffffff?text=Kids+Set" alt="طقم أطفال">
+                        <h3>طقم أولادي مريح</h3>
+                        <p class="price">120 ريال</p>
+                         <div class="product-actions">
+                            <button class="add-to-cart-btn action-btn" data-product="طقم أولادي مريح">أضف إلى السلة</button>
+                            <button class="try-on-btn action-btn" data-tryon-src="https://via.placeholder.com/120x150/34495E/ffffff?text=Set+TryOn&bg=FFFFFF00">تجربة افتراضية</button>
+                         </div>
+                     </div>
+                     <!-- Add other kids' products with try-on buttons -->
+                 </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Section (Existing HTML...) -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 متجر الأناقة للملابس. جميع الحقوق محفوظة.</p>
+            <p><small>وضع الإدارة: <span id="admin-status">غير نشط</span>. <button id="toggle-admin">تفعيل</button></small></p>
+             <p style="margin-top:10px; color: #ffc107;"><small>ملاحظة: التعديلات والإضافات مؤقتة. لحفظها، انسخ الكود المصدري يدويًا.</small></p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Section -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Existing Variables & Admin Logic (Password, isAdmin, etc.) ---
+            const ADMIN_PASSWORD = "admin123"; // كلمة مرور بسيطة جداً (غير آمنة!)
+            let isAdmin = false;
+            let originalProductData = {};
+            const adminStatusSpan = document.getElementById('admin-status');
+            const toggleAdminButton = document.getElementById('toggle-admin');
+            const formContainer = document.getElementById('add-product-form-container');
+            const formOverlay = document.getElementById('form-overlay'); // Shared overlay
+            const addProductForm = document.getElementById('add-product-form');
+            const cancelAddProductBtn = document.getElementById('cancel-add-product');
+
+            // --- Fitting Room Widget Variables ---
+            const widgetOverlay = document.getElementById('widget-overlay'); // Dedicated widget overlay
+            const fittingRoomWidget = document.getElementById('fitting-room-widget');
+            const widgetCloseBtn = document.getElementById('widget-close-btn');
+            const userPhotoUploadInput = document.getElementById('widget-user-photo-upload');
+            const userPhotoDisplay = document.getElementById('widget-user-photo');
+            const clothingOverlay = document.getElementById('widget-clothing-overlay');
+            let currentTryOnSrc = null; // To store the clothing item source for the widget
+            let isDragging = false;
+            let dragStartX, dragStartY, elementStartX, elementStartY;
+
+
+            // --- Existing Admin Functions (toggleAdminMode, initializeAdminButtons, etc.) ---
+            function toggleAdminMode() { /* ... existing code ... */ if (isAdmin) { initializeAdminButtons(); } }
+            function initializeAdminButtons() { /* ... existing code ... */ }
+            function enterEditMode(card) { /* ... existing code ... */ }
+            function exitEditMode(card, shouldSaveChanges) { /* ... existing code ... */ }
+            function saveChanges(card) { /* ... existing code ... */ }
+            function deleteProduct(card) { /* ... existing code ... */ }
+            function showAddProductForm(sectionId) { /* ... existing code ... */ formOverlay.style.display = 'block'; /* Use shared overlay */ }
+            function hideAddProductForm() { /* ... existing code ... */ formOverlay.style.display = 'none'; /* Use shared overlay */ }
+            function createProductCard(name, price, imageUrl, category, tryonImageUrl) { // Added tryonImageUrl
+                 const card = document.createElement('div');
+                 card.classList.add('product-card');
+                 card.dataset.id = `${category}-${Date.now()}`;
+
+                 // Include tryonImageUrl in the data attribute if provided
+                 const tryOnButtonHtml = tryonImageUrl
+                    ? `<button class="try-on-btn action-btn" data-tryon-src="${tryonImageUrl}">تجربة افتراضية</button>`
+                    : ''; // Don't show button if no try-on image
+
+                 card.innerHTML = `
+                    <div class="admin-controls" style="${isAdmin ? 'display: inline-block;' : 'display: none;'}">
+                        <button class="edit-btn">تعديل</button><button class="delete-btn">حذف</button><button class="save-btn" style="display: none;">حفظ</button><button class="cancel-btn" style="display: none;">إلغاء</button>
+                    </div>
+                    <img src="${imageUrl}" alt="${name}">
+                    <h3>${name}</h3>
+                    <p class="price">${price}</p>
+                    <div class="product-actions">
+                        <button class="add-to-cart-btn action-btn" data-product="${name}">أضف إلى السلة</button>
+                        ${tryOnButtonHtml}
+                    </div>
+                `;
+                 return card;
+             }
+             function initializeAdminButtonsForCard(card) { /* ... existing code ... */ }
+             function attachAddToCartListener(button) { /* ... existing code ... */ }
+             function attachTryOnListener(button) { // New function for try-on buttons
+                 if (!button) return;
+                 button.addEventListener('click', (e) => {
+                     const tryOnSrc = e.target.getAttribute('data-tryon-src');
+                     if (tryOnSrc) {
+                         openFittingRoom(tryOnSrc);
+                     } else {
+                         alert("عذراً، لا تتوفر صورة تجربة افتراضية لهذا المنتج.");
+                     }
+                 });
+             }
+
+
+            // --- Event Listener Initialization ---
+            toggleAdminButton.addEventListener('click', toggleAdminMode);
+            document.querySelectorAll('.add-to-cart-btn').forEach(attachAddToCartListener);
+            document.querySelectorAll('.try-on-btn').forEach(attachTryOnListener); // Attach to initial try-on buttons
+            document.querySelectorAll('.add-product-btn').forEach(button => button.addEventListener('click', (e) => showAddProductForm(e.target.getAttribute('data-section'))));
+            cancelAddProductBtn.addEventListener('click', hideAddProductForm);
+            formOverlay.addEventListener('click', hideAddProductForm); // Add Product form overlay hides form
+            addProductForm.addEventListener('submit', (e) => { // Updated submit handler
+                 e.preventDefault();
+                 const name = document.getElementById('product-name').value.trim();
+                 const price = document.getElementById('product-price').value;
+                 const image = document.getElementById('product-image').value.trim();
+                 const tryonImage = document.getElementById('product-tryon-image').value.trim(); // Get try-on image URL
+                 const category = document.getElementById('product-category').value;
+
+                 if (name && price && image && category) {
+                     const newCard = createProductCard(name, price + " ريال", image, category, tryonImage); // Pass tryonImage
+                     const targetGrid = document.querySelector(`#${category} .product-grid`);
+                     if (targetGrid) {
+                         targetGrid.appendChild(newCard);
+                         initializeAdminButtonsForCard(newCard);
+                         attachAddToCartListener(newCard.querySelector('.add-to-cart-btn'));
+                         attachTryOnListener(newCard.querySelector('.try-on-btn')); // Attach listener for new try-on button
+                         hideAddProductForm();
+                         console.log("منتج جديد أضيف مؤقتًا:", name);
+                         alert("تمت إضافة المنتج مؤقتًا. لحفظه، انسخ الكود المصدري يدويًا.");
+                     } else { alert("خطأ: لم يتم العثور على شبكة المنتجات."); }
+                 } else { alert("الرجاء ملء الحقول الأساسية (الاسم، السعر، الصورة، القسم)."); }
+             });
+            // --- Smooth Scroll & Active Link (Existing code) ---
+            const navLinks = document.querySelectorAll('nav a[href^="#"]'); /* ... */
+            const sections = document.querySelectorAll('section[id]'); /* ... */
+            window.addEventListener('scroll', () => { /* ... existing scroll logic ... */ });
+            navLinks.forEach(link => link.addEventListener('click', function(e) { /* ... existing click logic ... */ }));
+
+
+            // --- Fitting Room Widget Functions ---
+            function openFittingRoom(tryOnSrc) {
+                currentTryOnSrc = tryOnSrc;
+                clothingOverlay.src = currentTryOnSrc; // Set clothing image
+                userPhotoDisplay.src = ""; // Clear previous user photo
+                userPhotoDisplay.style.display = 'none'; // Hide image area initially
+                clothingOverlay.style.display = 'none'; // Hide clothing initially
+                userPhotoUploadInput.value = null; // Reset file input
+                 resetClothingOverlayPosition(); // Reset position
+
+                widgetOverlay.style.display = 'block';
+                fittingRoomWidget.style.display = 'block';
+            }
+
+            function closeFittingRoom() {
+                widgetOverlay.style.display = 'none';
+                fittingRoomWidget.style.display = 'none';
+                currentTryOnSrc = null;
+                // Optional: Stop dragging if widget is closed while dragging
+                isDragging = false;
+            }
+
+            function resetClothingOverlayPosition() {
+                 clothingOverlay.style.top = '20px'; // Or your preferred default
+                 clothingOverlay.style.left = '50%';
+                 clothingOverlay.style.transform = 'translateX(-50%)';
+                 clothingOverlay.style.width = '100px'; // Reset size if needed
+             }
+
+            widgetCloseBtn.addEventListener('click', closeFittingRoom);
+            widgetOverlay.addEventListener('click', closeFittingRoom); // Close by clicking overlay
+
+            userPhotoUploadInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        userPhotoDisplay.src = e.target.result;
+                        userPhotoDisplay.style.display = 'block'; // Show user photo area
+                        clothingOverlay.style.display = 'block'; // Show clothing overlay now
+                        resetClothingOverlayPosition(); // Reset position when new image loads
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    alert("الرجاء اختيار ملف صورة صالح.");
+                    userPhotoDisplay.src = "";
+                    userPhotoDisplay.style.display = 'none';
+                    clothingOverlay.style.display = 'none';
+                }
+            });
+
+            // --- Clothing Overlay Drag Logic ---
+             clothingOverlay.addEventListener('mousedown', (e) => {
+                 // Prevent default browser image dragging
+                 e.preventDefault();
+                 isDragging = true;
+                 // Calculate offset from mouse click to element's top-left corner
+                 dragStartX = e.clientX;
+                 dragStartY = e.clientY;
+                 elementStartX = clothingOverlay.offsetLeft;
+                 elementStartY = clothingOverlay.offsetTop;
+                 clothingOverlay.style.cursor = 'grabbing'; // Change cursor
+                 clothingOverlay.style.transition = 'none'; // Disable transitions during drag
+            });
+
+             document.addEventListener('mousemove', (e) => {
+                 if (!isDragging) return;
+
+                 const dx = e.clientX - dragStartX;
+                 const dy = e.clientY - dragStartY;
+
+                 // Calculate new position
+                 let newLeft = elementStartX + dx;
+                 let newTop = elementStartY + dy;
+
+                 // Optional: Boundary checks (keep overlay within user area)
+                 const userArea = document.getElementById('widget-user-area');
+                 const userAreaRect = userArea.getBoundingClientRect();
+                 const overlayRect = clothingOverlay.getBoundingClientRect(); // Use this for current size/pos
+
+                 // Simple boundary check (adjust as needed for better precision)
+                 const parentRect = clothingOverlay.parentElement.getBoundingClientRect();
+                 const overlayWidth = clothingOverlay.offsetWidth;
+                 const overlayHeight = clothingOverlay.offsetHeight;
+
+                 // Prevent moving too far left/right
+                 if (newLeft < 0) newLeft = 0;
+                 if (newLeft + overlayWidth > parentRect.width) newLeft = parentRect.width - overlayWidth;
+
+                 // Prevent moving too far top/bottom
+                 if (newTop < 0) newTop = 0;
+                  if (newTop + overlayHeight > parentRect.height) newTop = parentRect.height - overlayHeight;
+
+
+                 clothingOverlay.style.left = `${newLeft}px`;
+                 clothingOverlay.style.top = `${newTop}px`;
+                 // Since we're setting left/top directly, remove transform
+                 clothingOverlay.style.transform = 'none';
+             });
+
+            document.addEventListener('mouseup', () => {
+                 if (isDragging) {
+                    isDragging = false;
+                    clothingOverlay.style.cursor = 'move'; // Restore cursor
+                    clothingOverlay.style.transition = ''; // Re-enable transitions if any
+                 }
+            });
+            // Also stop dragging if mouse leaves the window
+             document.addEventListener('mouseleave', () => {
+                 if (isDragging) {
+                    isDragging = false;
+                    clothingOverlay.style.cursor = 'move';
+                    clothingOverlay.style.transition = '';
+                 }
+             });
+
+        });
+    </script>
+
+</body>
+</html>
